@@ -12,10 +12,13 @@ connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = ['http://localhost:5173', 'https://thin-cloths.vercel.app'];
+
 app.use(cors({
-  origin: '*', 
-  credentials: false,               
+  origin: allowedOrigins,
+  credentials: true,
 }));
+
 
 app.use(express.json());
 

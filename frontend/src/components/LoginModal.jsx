@@ -9,8 +9,6 @@ function LoginModal({ onClose }) {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
     if (storedName) {
