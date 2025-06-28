@@ -9,6 +9,8 @@ function LoginModal({ onClose }) {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
     if (storedName) {
@@ -88,7 +90,7 @@ function LoginModal({ onClose }) {
     setActiveTab("login");
   };
 
-  const renderLoginForm = () => (
+  const renderLoginForm = () =>
     userName ? (
       <div>
         <h2 className="text-lg font-bold mb-3">👋 Hello, {userName}</h2>
@@ -128,12 +130,21 @@ function LoginModal({ onClose }) {
         </button>
 
         <div className="flex justify-between text-xs text-blue-500 mt-2">
-          <span onClick={() => setActiveTab("forgot")} className="cursor-pointer">Forgot Password?</span>
-          <span onClick={() => setActiveTab("register")} className="cursor-pointer">Create Account</span>
+          <span
+            onClick={() => setActiveTab("forgot")}
+            className="cursor-pointer"
+          >
+            Forgot Password?
+          </span>
+          <span
+            onClick={() => setActiveTab("register")}
+            className="cursor-pointer"
+          >
+            Create Account
+          </span>
         </div>
       </form>
-    )
-  );
+    );
 
   const renderRegisterForm = () => (
     <form onSubmit={handleRegister} className="flex flex-col space-y-3">
