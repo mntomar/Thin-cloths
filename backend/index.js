@@ -1,33 +1,33 @@
 const express = require("express");
-const serverless = require("serverless-http");
+const connectDB = require("./config/db");
 const dotenv = require("dotenv");
-const connectDB = require("../config/db");
 const cors = require("cors");
 
-// Load .env
+// Load .env variables
 dotenv.config();
 
-// Connect MongoDB
+// Connect to MongoDB
 connectDB();
 
 const app = express();
 
 // Middleware
 app.use(cors({
-  origin: '*',
-  credentials: false,
+  origin: '*', 
+  credentials: false,               
 }));
+
 app.use(express.json());
 
 // API Routes
-app.use("/api/auth", require("../routes/authRoutes"));
-app.use("/api/products", require("../routes/productRoutes"));
-app.use("/api/cart", require("../routes/cartRoutes"));
-
-// Health Check
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/cart", require("./routes/cartRoutes"));
+// Health Check Route (Optional)
 app.get("/", (req, res) => {
-  res.send("✅ API running on Vercel");
+  res.send("✅ API is running...");
 });
 
-// Export for Vercel
-module.exports.handler = serverless(app);
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`)); 
