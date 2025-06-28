@@ -13,10 +13,9 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  
-    origin: 'https://visionary-madeleine-85f34b.netlify.app/',
-    credentials: true
-  }));
+  origin: '*', // Or '*' to allow all origins (not recommended for production)
+  credentials: true,               // If using cookies or auth headers
+}));
 
 app.use(express.json());
 
