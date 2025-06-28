@@ -9,16 +9,25 @@ function LoginModal({ onClose }) {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
-    const storedName = localStorage.getItem("userName");
+    const storedName = localStorage.getItem("loggedInUser");
     if (storedName) {
       setUserName(storedName);
     }
   }, []);
 
-  const handleRegister = async (e) => {
+  const getUsers = () => {
+    const users = localStorage.getItem("users");
+    return users ? JSON.parse(users) : [];
+  };
+
+  const saveUser = (user) => {
+    const users = getUsers();
+    users.push(user);
+    localStorage.setItem("users", JSON.stringify(users));
+  };
+
+  const handleRegister = (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!name) newErrors.name = "Name required";
@@ -27,28 +36,24 @@ function LoginModal({ onClose }) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          alert("✅ Account Created");
-          setActiveTab("login");
-        } else {
-          alert(`❌ Registration Failed: ${data.message}`);
-        }
-      } catch (err) {
-        console.error("Register error:", err);
-        alert("❌ Server Error");
+      const users = getUsers();
+      const existingUser = users.find((u) => u.email === email);
+      if (existingUser) {
+        alert("❌ User already exists with this email");
+      } else {
+        saveUser({ name, email, password });
+        localStorage.setItem("loggedInUser", name);
+        setUserName(name);
+        alert(`✅ Welcome ${name}! Your account is created.`);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setActiveTab("login"); 
       }
     }
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!email) newErrors.email = "Email required";
@@ -56,37 +61,40 @@ function LoginModal({ onClose }) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("userName", data.name);
-          setUserName(data.name);
-          alert(`✅ Welcome ${data.name}`);
-          setEmail("");
-          setPassword("");
-        } else {
-          alert(`❌ Login Failed: ${data.message}`);
-        }
-      } catch (err) {
-        console.error("Login error:", err);
-        alert("❌ Server Error during login");
+      const users = getUsers();
+      const user = users.find((u) => u.email === email && u.password === password);
+      if (user) {
+        localStorage.setItem("loggedInUser", user.name);
+        setUserName(user.name);
+        alert(`✅ Welcome ${user.name}`);
+        setEmail("");
+        setPassword("");
+      } else {
+        alert("❌ Invalid email or password");
       }
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
+    localStorage.removeItem("loggedInUser");
     setUserName("");
     alert("✅ Logged out");
+  };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      alert("❌ Please enter your email");
+      return;
+    }
+    const users = getUsers();
+    const user = users.find((u) => u.email === forgotEmail);
+    if (user) {
+      alert("✅ Password reset link sent to your email (Mock)");
+    } else {
+      alert("❌ Email not found");
+    }
+    setForgotEmail("");
     setActiveTab("login");
   };
 
@@ -120,7 +128,9 @@ function LoginModal({ onClose }) {
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2 rounded"
         />
-        {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-red-500 text-xs">{errors.password}</p>
+        )}
 
         <button
           type="submit"
@@ -174,7 +184,9 @@ function LoginModal({ onClose }) {
         onChange={(e) => setPassword(e.target.value)}
         className="border p-2 rounded"
       />
-      {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+      {errors.password && (
+        <p className="text-red-500 text-xs">{errors.password}</p>
+      )}
 
       <button
         type="submit"
@@ -193,14 +205,7 @@ function LoginModal({ onClose }) {
   );
 
   const renderForgotForm = () => (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        alert("✅ Password Reset Link Sent (Mock)");
-        setActiveTab("login");
-      }}
-      className="flex flex-col space-y-3"
-    >
+    <form onSubmit={handleForgotPassword} className="flex flex-col space-y-3">
       <h2 className="text-lg font-bold mb-1">Reset Password</h2>
       <input
         type="email"
@@ -213,7 +218,7 @@ function LoginModal({ onClose }) {
         type="submit"
         className="bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700"
       >
-        Send Link
+        Send Reset Link
       </button>
       <p
         onClick={() => setActiveTab("login")}
@@ -227,7 +232,6 @@ function LoginModal({ onClose }) {
   return (
     <div
       className="fixed top-0 right-0 w-full sm:w-96 h-full bg-white shadow-lg z-50 p-6 overflow-y-auto transition-transform duration-300"
-      style={{ transform: "translateX(0%)" }}
     >
       <button
         onClick={onClose}
