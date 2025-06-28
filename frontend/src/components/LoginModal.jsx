@@ -9,6 +9,8 @@ function LoginModal({ onClose }) {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
     if (storedName) {
@@ -26,7 +28,7 @@ function LoginModal({ onClose }) {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const res = await fetch("https://thin-cloths.vercel.app/api/auth/register", {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, password }),
@@ -55,7 +57,7 @@ function LoginModal({ onClose }) {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const res = await fetch("https://thin-cloths.vercel.app/api/auth/login", {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
