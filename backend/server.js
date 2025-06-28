@@ -12,7 +12,10 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://visionary-madeleine-85f34b.netlify.app/',  
+  credentials: true
+}));
 app.use(express.json());
 
 // API Routes
